@@ -1,31 +1,37 @@
-/*
+ /*
 ==============================================================================================================
 Stored Procedure: Load Bronze Layer (Source -> Bronze)
 ==============================================================================================================
 Script Purpose:
-    This stored procedure loads data into the 'bronze' schema from external CSV files. 
+    This stored procedure loads raw data from external CSV files into the 'bronze' schema.
     It performs the following actions:
-    - Truncates the bronze tables before loading data.
-    - Uses the `BULK INSERT` command to load data from csv Files to bronze tables.
+    - Truncates existing Bronze data before each load to ensure a fresh reload.
+    - Uses BULK INSERT to load data from CSV files into the corresponding Bronze tables.
+    - Tracks the duration of each table load and the overall batch execution time.
+    - Handles errors and reports relevant SQL Server error details.
 
 Parameters:
-    None. 
-	This stored procedure does not accept any parameters or return any values.
+    None.
+    This stored procedure does not accept any parameters or return any values.
 
 Usage Example:
     EXEC bronze.load_bronze;
 ==============================================================================================================
 */
+
 CREATE OR ALTER PROCEDURE bronze.load_bronze AS
 BEGIN
-	DECLARE @start_time DATETIME, @end_time DATETIME, @batch_start_time DATETIME, @batch_end_time DATETIME;
+	DECLARE @start_time DATETIME, @end_time DATETIME, 
+			@batch_start_time DATETIME, @batch_end_time DATETIME;
+
 	BEGIN TRY
-		SET	@batch_start_time = GETDATE();
+		SET @batch_start_time = GETDATE();
 		
 		PRINT '=====================================================';
 		PRINT 'Loading Bronze Layer';
 		PRINT '=====================================================';
 
+		-- Load raw CRM source data without applying transformations.
 		PRINT '-----------------------------------------------------';
 		PRINT 'Loading CRM Tables';
 		PRINT '-----------------------------------------------------';
@@ -42,9 +48,11 @@ BEGIN
 			FIELDTERMINATOR = ',',
 			TABLOCK
 		);
+
 		SET @end_time = GETDATE();
 		PRINT '>> Load Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR) + ' seconds';
 		PRINT '>> ----------';
+
 
 		SET @start_time = GETDATE();
 		PRINT 'Truncate Table: bronze.crm_prd_info';
@@ -58,9 +66,11 @@ BEGIN
 			FIELDTERMINATOR = ',',
 			TABLOCK
 		);
+
 		SET @end_time = GETDATE();
 		PRINT '>> Load Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR) + ' seconds';
 		PRINT '>> ----------';
+
 
 		SET @start_time = GETDATE();
 		PRINT 'Truncate Table: bronze.crm_sales_details';
@@ -74,10 +84,13 @@ BEGIN
 			FIELDTERMINATOR = ',',
 			TABLOCK
 		);
+
 		SET @end_time = GETDATE();
 		PRINT '>> Load Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR) + ' seconds';
 		PRINT '>> ----------';
 
+
+		-- Load supporting ERP data that will later be integrated with CRM data.
 		PRINT '-----------------------------------------------------';
 		PRINT 'Loading ERP Tables';
 		PRINT '-----------------------------------------------------';
@@ -94,9 +107,11 @@ BEGIN
 			FIELDTERMINATOR = ',',
 			TABLOCK
 		);
+
 		SET @end_time = GETDATE();
 		PRINT '>> Load Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR) + ' seconds';
 		PRINT '>> ----------';
+
 
 		SET @start_time = GETDATE();
 		PRINT 'Truncate Table: bronze.erp_loc_a101';
@@ -110,9 +125,11 @@ BEGIN
 			FIELDTERMINATOR = ',',
 			TABLOCK
 		);
+
 		SET @end_time = GETDATE();
 		PRINT '>> Load Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR) + ' seconds';
 		PRINT '>> ----------';
+
 
 		SET @start_time = GETDATE();
 		PRINT 'Truncate Table: bronze.erp_px_cat_g1v2';
@@ -126,19 +143,25 @@ BEGIN
 			FIELDTERMINATOR = ',',
 			TABLOCK
 		);
+
 		SET @end_time = GETDATE();
 		PRINT '>> Load Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR) + ' seconds';
 		PRINT '>> ----------';
 
+
+		-- Report overall batch performance after all source tables have been loaded.
 		SET @batch_end_time = GETDATE();
+
 		PRINT '=====================================================';
 		PRINT 'Loading Bronze Layer Is Completed';
 		PRINT ' - Total Load Duration: ' + CAST(DATEDIFF(SECOND, @batch_start_time, @batch_end_time) AS NVARCHAR) + ' seconds';
 		PRINT '=====================================================';
 	END TRY
+
 	BEGIN CATCH
+		-- Capture execution errors so the failure can be diagnosed from the procedure output.
 		PRINT '=====================================================';
-		PRINT 'ERROR OCCURED DURING LOADING BRONZE LAYER';
+		PRINT 'ERROR OCCURRED DURING LOADING BRONZE LAYER';
 		PRINT 'Error Message: ' + ERROR_MESSAGE();
 		PRINT 'Error Number: ' + CAST(ERROR_NUMBER() AS NVARCHAR);
 		PRINT 'Error State: ' + CAST(ERROR_STATE() AS NVARCHAR);
