@@ -109,10 +109,10 @@ BEGIN
 			prd_nm,
 			ISNULL(prd_cost, 0) AS prd_cost,
 			CASE
-				WHEN prd_line = 'M' THEN 'Mountain'
-				WHEN prd_line = 'R' THEN 'Road'
-				WHEN prd_line = 'S' THEN 'Other Sales'
-				WHEN prd_line = 'T' THEN 'Touring'
+				WHEN UPPER(TRIM(prd_line)) = 'M' THEN 'Mountain'
+				WHEN UPPER(TRIM(prd_line)) = 'R' THEN 'Road'
+				WHEN UPPER(TRIM(prd_line)) = 'S' THEN 'Other Sales'
+				WHEN UPPER(TRIM(prd_line)) = 'T' THEN 'Touring'
 				ELSE 'n/a'
 			END AS prd_line,
 			CAST(prd_start_dt AS DATE) AS prd_start_dt,
