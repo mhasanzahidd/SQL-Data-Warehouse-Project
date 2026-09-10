@@ -6,7 +6,8 @@ This project is a SQL Server-based Data Warehouse built to integrate data from m
 
 The main goal of this project is to take raw source data, process it through a structured ETL pipeline, and transform it into reliable, business-ready data using a Bronze, Silver, and Gold layer architecture.
 
-The project focuses on practical Data Warehousing concepts such as data integration, data cleansing, transformation, data quality validation, dimensional modeling, and Star Schema design.
+The project focuses on practical Data Warehousing concepts such as data integration, data cleansing, transformation, data quality validation, dimensional modeling, and Star schema design.
+
 ---
 
 ## Project Goals
@@ -22,17 +23,21 @@ The main objectives of this project are to:
 - Implement fact and dimension tables
 - Create reliable relationships between business entities
 - Document the warehouse structure and transformations
+
 ---
 
 ## Data Architecture
 
 The project follows a **Medallion Architecture** with three main layers:
 
+
 <img width="5100" height="3300" alt="data_architecture" src="https://github.com/user-attachments/assets/822783ea-b8d7-4339-9064-553c42918532" />
+
 
 1. **Bronze Layer:** Stores raw data as-is from the source systems. Data is ingested from CSV Files into SQL Server Database.
 2. **Silver Layer:** This layer includes data cleansing, standardization, and normalization processes to prepare data for analysis.
 3. **Gold Layer:** Houses business-ready data modeled into a star schema required for reporting and analytics.
+
 ---
 
 ## Repository Structure
